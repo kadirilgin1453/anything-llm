@@ -27,14 +27,14 @@ def gitbook():
     output_filename = f"doc-{name}.json"
     transaction_output_filename = f"doc-{name}.json"
     data = {
-      'id': str(uuid4()),
-      'url': metadata.get('source'),
-      "title": metadata.get('title'),
-      "description": metadata.get('title'),
-      "published": datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
-      "wordCount": len(content),
-      'pageContent': content,
-      'token_count_estimate': len(tokenize(content))
+        'id': str(uuid4()),
+        'url': metadata.get('source'),
+        "title": metadata.get('title'),
+        "description": metadata.get('title'),
+        "published": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "wordCount": len(content),
+        'pageContent': content,
+        'token_count_estimate': len(tokenize(content)),
     }
 
     with open(f"{output_path}/{output_filename}", 'w', encoding='utf-8') as file:

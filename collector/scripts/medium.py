@@ -11,12 +11,12 @@ def medium():
   if(author_url == ''):
     print("Not a valid medium.com/@author URL")
     exit(1)
-  
+
   handle = get_username(author_url)
   if(handle is None):
     print("This does not appear to be a valid medium.com/@author URL")
     exit(1)
-  
+
   publications = fetch_recent_publications(handle)
   if(len(publications)==0):
     print("There are no public or free publications by this creator - nothing to collect.")
@@ -28,7 +28,8 @@ def medium():
     os.makedirs(transaction_output_dir)
 
   for publication in alive_it(publications):
-    pub_file_path = transaction_output_dir + f"/publication-{publication.get('id')}.json"
+    pub_file_path = (
+        f"{transaction_output_dir}/publication-{publication.get('id')}.json")
     if os.path.exists(pub_file_path) == True: continue
 
     full_text = publication.get('pageContent')

@@ -22,14 +22,15 @@ def as_pdf(**kwargs):
 
     content = page.page_content
     data = {
-      'id': guid(), 
-      'url': "file://"+os.path.abspath(f"{parent_dir}/processed/{filename}{ext}"),
-      'title': f"{filename}_pg{pg_num}{ext}",
-      'description': "a custom file uploaded by the user.",
-      'published': file_creation_time(fullpath),
-      'wordCount': len(content),
-      'pageContent': content,
-      'token_count_estimate': len(tokenize(content))
+        'id': guid(),
+        'url':
+        f'file://{os.path.abspath(f"{parent_dir}/processed/{filename}{ext}")}',
+        'title': f"{filename}_pg{pg_num}{ext}",
+        'description': "a custom file uploaded by the user.",
+        'published': file_creation_time(fullpath),
+        'wordCount': len(content),
+        'pageContent': content,
+        'token_count_estimate': len(tokenize(content)),
     }
     write_to_server_documents(data, f"{slugify(filename)}-pg{pg_num}-{data.get('id')}")
 

@@ -10,12 +10,12 @@ def substack():
   if(author_url == ''):
     print("Not a valid author.substack.com URL")
     exit(1)
-  
+
   source = urlparse(author_url)
   if('substack.com' not in source.netloc or len(source.netloc.split('.')) != 3):
     print("This does not appear to be a valid author.substack.com URL")
     exit(1)
-  
+
   subdomain = source.netloc.split('.')[0]
   publications = fetch_all_publications(subdomain)
   valid_publications = only_valid_publications(publications)
@@ -25,14 +25,15 @@ def substack():
     exit(1)
 
   print(f"{len(valid_publications)} of {len(publications)} publications are readable publically text posts - collecting those.")
-  
+
   totalTokenCount = 0
   transaction_output_dir = f"../server/storage/documents/substack-{subdomain}"
   if os.path.isdir(transaction_output_dir) == False:
     os.makedirs(transaction_output_dir)
 
   for publication in alive_it(valid_publications):
-    pub_file_path = transaction_output_dir + f"/publication-{publication.get('id')}.json"
+    pub_file_path = (
+        f"{transaction_output_dir}/publication-{publication.get('id')}.json")
     if os.path.exists(pub_file_path) == True: continue
 
     full_text = get_content(publication.get('canonical_url'))

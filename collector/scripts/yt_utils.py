@@ -4,29 +4,29 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def is_yt_short(videoId):
-    url = 'https://www.youtube.com/shorts/' + videoId
+    url = f'https://www.youtube.com/shorts/{videoId}'
     ret = requests.head(url)
     return ret.status_code == 200
 
 def get_channel_id(channel_link):
-  if('@' in channel_link):
-    pattern = r'https?://www\.youtube\.com/(@\w+)/?'
-    match = re.match(pattern, channel_link)
-    if match is False: return None
-    handle = match.group(1)
-    print('Need to map username to channelId - this can take a while sometimes.')
-    response = requests.get(f"https://yt.lemnoslife.com/channels?handle={handle}", timeout=20)
+    if ('@' in channel_link):
+        pattern = r'https?://www\.youtube\.com/(@\w+)/?'
+        match = re.match(pattern, channel_link)
+        if match is False: return None
+        handle = match[1]
+        print('Need to map username to channelId - this can take a while sometimes.')
+        response = requests.get(f"https://yt.lemnoslife.com/channels?handle={handle}", timeout=20)
 
-    if(response.ok == False):
-      print("Handle => ChannelId mapping endpoint is too slow - use regular youtube.com/channel URL")
-      return None
-  
-    json_data = response.json()
-    return json_data.get('items')[0].get('id')
-  else:
-    pattern = r"youtube\.com/channel/([\w-]+)"
-    match = re.search(pattern, channel_link)
-    return match.group(1) if match else None 
+        if not response.ok:
+            print("Handle => ChannelId mapping endpoint is too slow - use regular youtube.com/channel URL")
+            return None
+
+        json_data = response.json()
+        return json_data.get('items')[0].get('id')
+    else:
+        pattern = r"youtube\.com/channel/([\w-]+)"
+        match = re.search(pattern, channel_link)
+        return match[1] if match else None 
 
 
 def clean_text(text):
@@ -47,9 +47,9 @@ def get_duration(json_str):
   return data[-1].get('start')
 
 def fetch_channel_video_information(channel_id, windowSize = 50):
-    if channel_id == None or len(channel_id) == 0:
-      print("No channel id provided!")
-      exit(1)
+    if channel_id is None or len(channel_id) == 0:
+        print("No channel id provided!")
+        exit(1)
 
     if os.path.isdir("./outputs/channel-logs") == False:
       os.makedirs("./outputs/channel-logs")
@@ -60,10 +60,10 @@ def fetch_channel_video_information(channel_id, windowSize = 50):
         print(f"Returning cached data for channel {channel_id}. If you do not wish to use stored data then delete the file for this channel to allow refetching.")
         return json.load(file)
 
-    if(os.getenv('GOOGLE_APIS_KEY') == None):
+    if os.getenv('GOOGLE_APIS_KEY') is None:
         print("GOOGLE_APIS_KEY env variable not set!")
         exit(1)
-    
+
     done = False
     currentPage = None
     pageTokens = []
@@ -73,16 +73,16 @@ def fetch_channel_video_information(channel_id, windowSize = 50):
     }
 
     print("Fetching first page of results...")
-    while(done == False):
+    while not done:
         url = f"https://www.googleapis.com/youtube/v3/search?key={os.getenv('GOOGLE_APIS_KEY')}&channelId={channel_id}&part=snippet,id&order=date&type=video&maxResults={windowSize}"
         if(currentPage != None):
            print(f"Fetching page ${currentPage}")
            url += f"&pageToken={currentPage}"
 
         req = requests.get(url)
-        if(req.ok == False):
-           print("Could not fetch channel_id items!")
-           exit(1)
+        if not req.ok:
+            print("Could not fetch channel_id items!")
+            exit(1)
 
         response = req.json()
         currentPage = response.get('nextPageToken')
@@ -109,12 +109,12 @@ def fetch_channel_video_information(channel_id, windowSize = 50):
               'published': item.get('snippet').get('publishTime'),
             }
             items.append(newItem)
-        
+
         pageTokens.append(currentPage)
 
     data['items'] = items
     with open(file_path, 'w+', encoding='utf-8') as json_file:
       json.dump(data, json_file, ensure_ascii=True, indent=2)
       print(f"{len(items)} videos found for channel {data.get('channelTitle')}. Saved to channel-logs/channel-{channel_id}.json")
-    
+
     return data
